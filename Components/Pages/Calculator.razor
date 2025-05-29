@@ -7,19 +7,20 @@
         a loan calculator can be an ideal tool to help you figure this out
     </p>
     <p>
-       The Loan Shark Application was designed to help borrowers calculate amortized loans. These include the various
-       types of loans; car loans, student loans and other types of personal loans that are paid off in regular instances 
-       with fixed payments covering both the principal amount and interest. Our calculator gives you a detailed breakdown
-       as to what to expect. Just enter the loan amount, term and interest rate and click calculate to see your personalized results.
+        The Loan Shark Application was designed to help borrowers calculate amortized loans. These include the various
+        types of loans; car loans, student loans and other types of personal loans that are paid off in regular instances
+        with fixed payments covering both the principal amount and interest. Our calculator gives you a detailed breakdown
+        as to what to expect. Just enter the loan amount, term and interest rate and click calculate to see your personalized results.
     </p>
+
     <div class="row">
         <div class="col-12 col-md-6 loanForm p-3 rounded">
-            <EditForm EditContext="editContext">
+            <EditForm EditContext="editContext" OnValidSubmit="HandleSubmit">
                 <DataAnnotationsValidator />
                 <div class="row gy-2">
                     <div class="col-12">
                         <label for="purchaseAmount" class="form-label">Purchase Amount:</label>
-                        <InputNumber @bind-Value=loan.PurchaseAmount class="form-control" step="100"/>
+                        <InputNumber @bind-Value=loan.PurchaseAmount class="form-control" step="100" />
                         <ValidationMessage For="() => loan.PurchaseAmount" />
                     </div>
                 </div>
@@ -38,45 +39,55 @@
                 </div>
             </EditForm>
         </div>
-        <div class="col-12 col-md-6 d-flex flex-column justify-content-between px-4 mt-4 mt-md-0">
+        <div class="col-12 col-md-6 d-flex flex-column justify-content-between px-4">
             <div class="paymentTitle">
                 <p>Your Monthly Payment</p>
             </div>
             <div class="display-1 payment">
-                @loan.Payment.ToString("C")
+                ₵@loan.Payment.ToString("N2")
             </div>
             <div class="row border border-1 g-0 p-3">
                 <div class="col-6">
                     <label class="text-start">Purchase Amount</label>
                 </div>
                 <div class="col-6 text-end">
-                    @loan.PurchaseAmount.ToString("C")
+                    ₵@loan.PurchaseAmount.ToString("N2")
                 </div>
                 <div class="col-6">
                     <label class="text-start">Total Interest</label>
                 </div>
                 <div class="col-6 text-end">
-                    @loan.TotalInterest.ToString("C")
+                    ₵@loan.TotalInterest.ToString("N2")
                 </div>
                 <div class="col-6 totalCost">
                     <label class="text-start">Total Cost</label>
                 </div>
                 <div class="col-6 text-end">
-                    @loan.TotalCost.ToString("C")
+                    ₵@loan.TotalCost.ToString("N2")
                 </div>
             </div>
             <div class="text-end mt-2">
-                <button class="btn btn-primary">Show Schedule</button>
+                <button class="btn btn-primary" @onclick="ShowScheduleToggle">@buttonText</button>
             </div>
         </div>
+
+        @if (showSchedule)
+        {
+            <div class="col-12 fade-in">
+                <PaymentSchedule Payments="loan.Payments" />
+            </div>
+        }
+
     </div>
 </div>
 
 
 @code {
     private Loan loan = new Loan();
-
     private EditContext? editContext;
+    private bool showSchedule = false;
+    private string buttonText = "Show Schedule";
+
 
     protected override void OnInitialized()
     {
@@ -84,6 +95,25 @@
         loan.PurchaseAmount = 25000;
         loan.Term = 5;
         loan.Rate = 5.0;
+        
     }
 
+    private void HandleSubmit()
+    {
+        loan = LoanUtilities.GetPayment(loan);
+    }
+
+    private void ShowScheduleToggle()
+    {
+        if (showSchedule)
+        {
+            showSchedule = false;
+            buttonText = "Show Schedule";
+        }
+        else
+        {
+            showSchedule = true;
+            buttonText = "Hide Schedule";
+        }
+    }
 }
